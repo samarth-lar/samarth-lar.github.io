@@ -598,7 +598,11 @@
         });
 
         // Generate a question based on the current operation
-                function generateQuestion() {
+        function generateQuestion() {
+            let previousQuestions = new Set();
+            let questionKey;
+
+            do {
             switch(currentOperation) {
             case 'addition':
                 num1 = Math.floor(Math.random() * 20) + 1; // 1-20
@@ -623,6 +627,25 @@
                 num1 = num2 * correctAnswer;
                 break;
             }
+            questionKey = `${num1},${num2},${currentOperation}`;
+            } while (previousQuestions.has(questionKey));
+
+            previousQuestions.add(questionKey);
+
+            // Update DOM
+            document.getElementById('num1').textContent = num1;
+            document.getElementById('num2').textContent = num2;
+            document.getElementById('operation-symbol').textContent = symbols[currentOperation];
+            document.getElementById('character').style.backgroundImage = `url('${characterStates.default}')`;
+            
+            // Clear the input and focus on it
+            const answerInput = document.getElementById('answer');
+            answerInput.value = '';
+            answerInput.focus();
+            
+            // Hide feedback
+            document.getElementById('feedback').classList.remove('visible', 'correct', 'incorrect');
+        }
 
             // Update DOM
             document.getElementById('num1').textContent = num1;
