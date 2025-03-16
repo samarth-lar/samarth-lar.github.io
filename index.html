@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Champions - Fun Learning Adventure!</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Fredoka+One&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6c5ce7;
+            --secondary: #00cec9;
+            --tertiary: #fdcb6e;
+            --success: #00b894;
+            --danger: #d63031;
+            --light: #f8f9fa;
+            --dark: #2d3436;
+            --gradient: linear-gradient(45deg, #6c5ce7, #00cec9);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: #dfe6e9;
+            color: var(--dark);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .app-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--light);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            background: var(--gradient);
+            padding: 25px 30px;
+            color: white;
+            text-align: center;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .profile-section {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .profile-photo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 3px solid white;
+            object-fit: cover;
+            margin-right: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .creator-info {
+            text-align: left;
+        }
+
+        .creator-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .creator-title {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        h1 {
+            font-family: 'Fredoka One', cursive;
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .about-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.3);
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .about-btn:hover {
+            background: rgba(255,255,255,0.5);
+        }
+
+        .about-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1100;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .about-modal.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .about-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        .about-content h2 {
+            color: var(--primary);
+            font-family: 'Fredoka One', cursive;
+            margin-bottom: 20px;
+        }
+
+        .about-content p {
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #777;
+            cursor: pointer;
+        }
+
+        .about-photo {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 20px;
+            display: block;
+            border: 5px solid var(--secondary);
+        }
+
+        .operation-selector {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 25px 0;
+            padding: 0 20px;
+        }
+
+        .operation-btn {
+            padding: 12px 20px;
+            border-radius: 50px;
+            border: none;
+            background: white;
+            color: var(--dark);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            min-width: 150px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .operation-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 14px rgba(0,0,0,0.15);
+        }
+
+        .operation-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .question-container {
+            padding: 30px;
+            text-align: center;
+            background: white;
+            margin: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.04);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .question-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: var(--gradient);
+        }
+
+        .question {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 30px;
+            color: var(--dark);
+        }
+
+        .equation {
+            display: inline-block;
+            background: rgba(108, 92, 231, 0.1);
+            padding: 15px 30px;
+            border-radius: 15px;
+        }
+
+        .character {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 20px;
+            background-image: url('https://cdn-icons-png.flaticon.com/512/3965/3965241.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            transition: transform 0.3s ease;
+        }
+
+        .answer-section {
+            margin: 30px 0;
+        }
+
+        .answer-input {
+            padding: 20px;
+            font-size: 1.5rem;
+            border: 3px solid #e0e0e0;
+            border-radius: 15px;
+            width: 200px;
+            text-align: center;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            color: var(--dark);
+        }
+
+        .answer-input:focus {
+            border-color: var(--secondary);
+            outline: none;
+            box-shadow: 0 0 0 5px rgba(0, 206, 201, 0.2);
+        }
+
+        .check-btn {
+            background: var(--success);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            padding: 15px 35px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 184, 148, 0.3);
+        }
+
+        .check-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 184, 148, 0.4);
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            margin-top: 10px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #777;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .feedback {
+            padding: 20px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 20px;
+            border-radius: 15px;
+            opacity: 0;
+            transition: all 0.5s ease;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .visible {
+            opacity: 1;
+        }
+
+        .feedback.correct {
+            background-color: rgba(0, 184, 148, 0.2);
+            color: var(--success);
+        }
+
+        .feedback.incorrect {
+            background-color: rgba(214, 48, 49, 0.2);
+            color: var(--danger);
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 15px;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            margin: 30px 0 20px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--gradient);
+            width: 0;
+            transition: width 0.5s ease;
+            border-radius: 10px;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-30px);}
+            60% {transform: translateY(-15px);}
+        }
+
+        .celebrate {
+            animation: bounce 1s;
+        }
+
+        .operation-symbol {
+            font-size: 2.5rem;
+            margin: 0 15px;
+        }
+
+        /* Confetti Animation */
+        .confetti-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+            overflow: hidden;
+            display: none;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            border-radius: 0;
+            opacity: 0.7;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(calc(100vh + 100px)) rotate(360deg);
+                opacity: 0.5;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .operation-btn {
+                min-width: calc(50% - 15px);
+            }
+            .question {
+                font-size: 2rem;
+            }
+            .character {
+                width: 80px;
+                height: 80px;
+            }
+            h1 {
+                font-size: 2.2rem;
+            }
+            .profile-section {
+                flex-direction: column;
+                margin-bottom: 20px;
+            }
+            .profile-photo {
+                margin-right: 0;
+                margin-bottom: 10px;
+            }
+            .creator-info {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Confetti container for celebrations -->
+    <div class="confetti-container" id="confetti-container"></div>
+    
+    <!-- About Modal -->
+    <div class="about-modal" id="about-modal">
+        <div class="about-content">
+            <button class="close-btn" onclick="closeAbout()">×</button>
+            <img src="samarth.png" alt="Samarth Chaurasia" class="about-photo">
+            <h2>About Me</h2>
+            <p>Hi! I'm Samarth Chaurasia, a passionate student who loves mathematics and coding.</p>
+            <p>I created this Math Champions quiz to help children like me practice basic arithmetic operations in a fun and engaging way.</p>
+            <p>I'm currently in Class 4 and going to be in Class 5 in next month and my favorite subjects are Math and Computer Science. When I'm not studying, I enjoy playing chess and solving puzzles.</p>
+            <p>This is my first web application, and I'm excited to continue learning and building more projects in the future!</p>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <div class="header">
+            <div class="profile-section">
+                <img src="samarth.png" alt="Samarth Chaurasia" class="profile-photo">
+                <div class="creator-info">
+                    <div class="creator-name">Samarth Chaurasia</div>
+                    <div class="creator-title">Young Mathematician & Coder</div>
+                </div>
+            </div>
+            <h1>Math Champions</h1>
+            <p class="subtitle">Master math skills with fun!</p>
+            <button class="about-btn" onclick="showAbout()">About Me</button>
+        </div>
+
+        <div class="operation-selector">
+            <button class="operation-btn active" data-op="addition">Addition (+)</button>
+            <button class="operation-btn" data-op="subtraction">Subtraction (-)</button>
+            <button class="operation-btn" data-op="multiplication">Multiplication (×)</button>
+            <button class="operation-btn" data-op="division">Division (÷)</button>
+        </div>
+
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+
+        <div class="question-container">
+            <div class="character" id="character"></div>
+            <div class="question">
+                <div class="equation">
+                    <span id="num1">5</span> 
+                    <span class="operation-symbol" id="operation-symbol">+</span> 
+                    <span id="num2">3</span> = ?
+                </div>
+            </div>
+
+            <div class="answer-section">
+                <input type="number" class="answer-input" id="answer" placeholder="?" autofocus>
+                <br>
+                <button class="check-btn" onclick="checkAnswer()">Check Answer</button>
+            </div>
+        </div>
+
+        <div class="feedback" id="feedback"></div>
+
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-label">Questions</div>
+                <div class="stat-value" id="questions-asked">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Correct</div>
+                <div class="stat-value" id="correct-answers">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Streak</div>
+                <div class="stat-value" id="streak">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Accuracy</div>
+                <div class="stat-value" id="accuracy">0%</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables to store question information and stats
+        let num1, num2, correctAnswer;
+        let questionsAsked = 0;
+        let correctAnswers = 0;
+        let incorrectAnswers = 0;
+        let currentStreak = 0;
+        let bestStreak = 0;
+        let currentOperation = "addition";
+        
+        // Images for different feedback situations
+        const characterStates = {
+            default: 'https://cdn-icons-png.flaticon.com/512/3965/3965241.png',
+            correct: 'https://cdn-icons-png.flaticon.com/512/3965/3965274.png',
+            incorrect: 'https://cdn-icons-png.flaticon.com/512/3965/3965232.png'
+        };
+
+        // Operation symbols for display
+        const symbols = {
+            addition: '+',
+            subtraction: '−',
+            multiplication: '×',
+            division: '÷'
+        };
+
+        // About modal functions
+        function showAbout() {
+            document.getElementById('about-modal').classList.add('visible');
+        }
+
+        function closeAbout() {
+            document.getElementById('about-modal').classList.remove('visible');
+        }
+
+        // Set up event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up operation buttons
+            const operationButtons = document.querySelectorAll('.operation-btn');
+            operationButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Remove active class from all buttons
+                    operationButtons.forEach(btn => btn.classList.remove('active'));
+                    // Add active class to clicked button
+                    this.classList.add('active');
+                    // Set current operation
+                    currentOperation = this.getAttribute('data-op');
+                    // Update operation symbol
+                    document.getElementById('operation-symbol').textContent = symbols[currentOperation];
+                    // Generate a new question
+                    generateQuestion();
+                });
+            });
+
+            // Add keypress event for Enter key
+            document.getElementById('answer').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    checkAnswer();
+                }
+            });
+
+            // Generate the first question
+            generateQuestion();
+        });
+
+        // Generate a question based on the current operation
+        function generateQuestion() {
+            switch(currentOperation) {
+                case 'addition':
+                    num1 = Math.floor(Math.random() * 10) + 1;
+                    num2 = Math.floor(Math.random() * 10) + 1;
+                    correctAnswer = num1 + num2;
+                    break;
+                case 'subtraction':
+                    // Ensure the result is positive for young children
+                    num1 = Math.floor(Math.random() * 10) + 5; // 5-14
+                    num2 = Math.floor(Math.random() * num1); // 0 to num1-1
+                    correctAnswer = num1 - num2;
+                    break;
+                case 'multiplication':
+                    num1 = Math.floor(Math.random() * 5) + 1; // 1-5
+                    num2 = Math.floor(Math.random() * 5) + 1; // 1-5
+                    correctAnswer = num1 * num2;
+                    break;
+                case 'division':
+                    // Ensure clean division without remainders
+                    num2 = Math.floor(Math.random() * 5) + 1; // 1-5
+                    correctAnswer = Math.floor(Math.random() * 5) + 1; // 1-5
+                    num1 = num2 * correctAnswer;
+                    break;
+            }
+
+            // Update DOM
+            document.getElementById('num1').textContent = num1;
+            document.getElementById('num2').textContent = num2;
+            document.getElementById('operation-symbol').textContent = symbols[currentOperation];
+            document.getElementById('character').style.backgroundImage = `url('${characterStates.default}')`;
+            
+            // Clear the input and focus on it
+            const answerInput = document.getElementById('answer');
+            answerInput.value = '';
+            answerInput.focus();
+            
+            // Hide feedback
+            document.getElementById('feedback').classList.remove('visible', 'correct', 'incorrect');
+        }
+
+        // Check the user's answer
+        function checkAnswer() {
+            const answerInput = document.getElementById('answer');
+            const userAnswer = parseInt(answerInput.value.trim());
+
+            // Validate that an answer was provided
+            if (isNaN(userAnswer)) {
+                document.getElementById('feedback').textContent = "Please enter a number!";
+                document.getElementById('feedback').classList.add('visible', 'incorrect');
+                return;
+            }
+
+            // Update question count
+            questionsAsked++;
+            
+            // Check if the answer is correct
+            if (userAnswer === correctAnswer) {
+                // Update stats
+                correctAnswers++;
+                currentStreak++;
+                
+                // Update best streak if needed
+                if (currentStreak > bestStreak) {
+                    bestStreak = currentStreak;
+                }
+                
+                // Show correct feedback
+                document.getElementById('feedback').textContent = "Correct! Great job!";
+                document.getElementById('feedback').classList.add('visible', 'correct');
+                document.getElementById('character').style.backgroundImage = `url('${characterStates.correct}')`;
+                document.getElementById('character').classList.add('celebrate');
+                
+                // Show confetti
+                createConfetti();
+            } else {
+                // Update stats
+                incorrectAnswers++;
+                currentStreak = 0;
+                
+                // Show incorrect feedback
+                document.getElementById('feedback').innerHTML = 
+                    `Not quite! The correct answer is <strong>${correctAnswer}</strong>`;
+                document.getElementById('feedback').classList.add('visible', 'incorrect');
+                document.getElementById('character').style.backgroundImage = `url('${characterStates.incorrect}')`;
+            }
+            
+            // Remove animation class after animation ends
+            setTimeout(() => {
+                document.getElementById('character').classList.remove('celebrate');
+            }, 1000);
+            
+            // Update stats display
+            updateStats();
+            
+            // Generate a new question after a delay
+            setTimeout(generateQuestion, 2000);
+        }
+
+        // Update statistics
+        function updateStats() {
+            document.getElementById('questions-asked').textContent = questionsAsked;
+            document.getElementById('correct-answers').textContent = correctAnswers;
+            document.getElementById('streak').textContent = currentStreak;
+            
+            // Calculate accuracy
+            const accuracy = questionsAsked > 0 
+                ? Math.round((correctAnswers / questionsAsked) * 100) 
+                : 0;
+            document.getElementById('accuracy').textContent = `${accuracy}%`;
+            
+            // Update progress bar (assuming 10 correct answers is a goal)
+            const progressPercentage = Math.min(correctAnswers / 10 * 100, 100);
+            document.getElementById('progress-bar').style.width = `${progressPercentage}%`;
+        }
+
+        // Create confetti animation
+        function createConfetti() {
+            const confettiContainer = document.getElementById('confetti-container');
+            confettiContainer.innerHTML = '';
+            confettiContainer.style.display = 'block';
+            
+            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
+            
+            // Create 100 confetti pieces
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement('div');
+                confetti.classList.add('confetti');
+                confetti.style.left = `${Math.random() * 100}%`;
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animation = `fall ${Math.random() * 3 + 2}s linear forwards`;
+                confetti.style.opacity = Math.random();
+                confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+                
+                // Different shapes of confetti
+                if (Math.random() > 0.5) {
+                    confetti.style.borderRadius = '50%';
+                } else {
+                    confetti.style.width = `${Math.random() * 10 + 5}px`;
+                    confetti.style.height = `${Math.random() * 10 + 5}px`;
+                }
+                
+                confettiContainer.appendChild(confetti);
+            }
+            
+            // Remove confetti after animation
+            setTimeout(() => {
+                confettiContainer.style.display = 'none';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
