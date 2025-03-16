@@ -456,6 +456,10 @@
     <!-- Confetti container for celebrations -->
     <div class="confetti-container" id="confetti-container"></div>
     
+    <!-- Add audio elements -->
+    <audio id="correct-sound" src="correct.mp3" preload="auto"></audio>
+    <audio id="incorrect-sound" src="incorrect.mp3" preload="auto"></audio>
+    
     <!-- About Modal -->
     <div class="about-modal" id="about-modal">
         <div class="about-content">
@@ -469,69 +473,7 @@
         </div>
     </div>
 
-    <div class="app-container">
-        <div class="header">
-            <div class="profile-section">
-                <img src="samarth.png" alt="Samarth Chaurasia" class="profile-photo">
-                <div class="creator-info">
-                    <div class="creator-name">Samarth Chaurasia</div>
-                    <div class="creator-title">Young Mathematician & Coder</div>
-                </div>
-            </div>
-            <h1>Math Champions</h1>
-            <p class="subtitle">Master math skills with fun!</p>
-            <button class="about-btn" onclick="showAbout()">About Me</button>
-        </div>
-
-        <div class="operation-selector">
-            <button class="operation-btn active" data-op="addition">Addition (+)</button>
-            <button class="operation-btn" data-op="subtraction">Subtraction (-)</button>
-            <button class="operation-btn" data-op="multiplication">Multiplication (×)</button>
-            <button class="operation-btn" data-op="division">Division (÷)</button>
-        </div>
-
-        <div class="progress-bar-container">
-            <div class="progress-bar" id="progress-bar"></div>
-        </div>
-
-        <div class="question-container">
-            <div class="character" id="character"></div>
-            <div class="question">
-                <div class="equation">
-                    <span id="num1">5</span> 
-                    <span class="operation-symbol" id="operation-symbol">+</span> 
-                    <span id="num2">3</span> = ?
-                </div>
-            </div>
-
-            <div class="answer-section">
-                <input type="number" class="answer-input" id="answer" placeholder="?" autofocus>
-                <br>
-                <button class="check-btn" onclick="checkAnswer()">Check Answer</button>
-            </div>
-        </div>
-
-        <div class="feedback" id="feedback"></div>
-
-        <div class="stats-container">
-            <div class="stat-card">
-                <div class="stat-label">Questions</div>
-                <div class="stat-value" id="questions-asked">0</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Correct</div>
-                <div class="stat-value" id="correct-answers">0</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Streak</div>
-                <div class="stat-value" id="streak">0</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Accuracy</div>
-                <div class="stat-value" id="accuracy">0%</div>
-            </div>
-        </div>
-    </div>
+    <!-- Rest of HTML remains the same -->
 
     <script>
         // Variables to store question information and stats
@@ -542,6 +484,7 @@
         let currentStreak = 0;
         let bestStreak = 0;
         let currentOperation = "addition";
+        let previousQuestions = new Set(); // Moved outside function to track across calls
         
         // Images for different feedback situations
         const characterStates = {
@@ -567,110 +510,119 @@
             document.getElementById('about-modal').classList.remove('visible');
         }
 
-        // Set up event listeners
-        document.addEventListener('DOMContentLoaded', function() {
-            // Set up operation buttons
-            const operationButtons = document.querySelectorAll('.operation-btn');
-            operationButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    // Remove active class from all buttons
-                    operationButtons.forEach(btn => btn.classList.remove('active'));
-                    // Add active class to clicked button
-                    this.classList.add('active');
-                    // Set current operation
-                    currentOperation = this.getAttribute('data-op');
-                    // Update operation symbol
-                    document.getElementById('operation-symbol').textContent = symbols[currentOperation];
-                    // Generate a new question
-                    generateQuestion();
-                });
-            });
 
-            // Add keypress event for Enter key
-            document.getElementById('answer').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    checkAnswer();
-                }
-            });
+// Inside your DOMContentLoaded event:
+document.addEventListener('DOMContentLoaded', function() {
+    // Define elements only once, here
+    window.elements = { // Use window.elements to make it globally accessible
+        num1: document.getElementById('num1'),
+        num2: document.getElementById('num2'),
+        opSymbol: document.getElementById('operation-symbol'),
+        character: document.getElementById('character'),
+        answer: document.getElementById('answer'),
+        feedback: document.getElementById('feedback'),
+        questionsAsked: document.getElementById('questions-asked'),
+        correctAnswers: document.getElementById('correct-answers'),
+        streak: document.getElementById('streak'),
+        accuracy: document.getElementById('accuracy'),
+        progressBar: document.getElementById('progress-bar'),
+        confettiContainer: document.getElementById('confetti-container'),
+        correctSound: document.getElementById('correct-sound'),
+        incorrectSound: document.getElementById('incorrect-sound')
+    };
 
-            // Generate the first question
+    // Add keypress event for Enter key
+    elements.answer.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            checkAnswer();
+        }
+    });
+
+    // Add click events for operation buttons
+    document.querySelectorAll('.operation-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            // Remove active class from all buttons
+            document.querySelectorAll('.operation-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Add active class to clicked button
+            this.classList.add('active');
+            
+            // Set current operation
+            currentOperation = this.getAttribute('data-op');
+            
+            // Generate a new question with this operation
             generateQuestion();
         });
+    });
+
+    // Generate the first question
+    generateQuestion();
+});
 
         // Generate a question based on the current operation
         function generateQuestion() {
-            let previousQuestions = new Set();
-            let questionKey;
-
-            do {
-            switch(currentOperation) {
-            case 'addition':
-                num1 = Math.floor(Math.random() * 20) + 1; // 1-20
-                num2 = Math.floor(Math.random() * 20) + 1; // 1-20
-                correctAnswer = num1 + num2;
-                break;
-            case 'subtraction':
-                // Ensure the result is positive for young children
-                num1 = Math.floor(Math.random() * 20) + 10; // 10-29
-                num2 = Math.floor(Math.random() * num1); // 0 to num1-1
-                correctAnswer = num1 - num2;
-                break;
-            case 'multiplication':
-                num1 = Math.floor(Math.random() * 10) + 1; // 1-10
-                num2 = Math.floor(Math.random() * 10) + 1; // 1-10
-                correctAnswer = num1 * num2;
-                break;
-            case 'division':
-                // Ensure clean division without remainders
-                num2 = Math.floor(Math.random() * 10) + 1; // 1-10
-                correctAnswer = Math.floor(Math.random() * 10) + 1; // 1-10
-                num1 = num2 * correctAnswer;
-                break;
+            // Limit set size to prevent memory issues
+            if (previousQuestions.size > 100) {
+                previousQuestions.clear();
             }
-            questionKey = `${num1},${num2},${currentOperation}`;
-            } while (previousQuestions.has(questionKey));
+            
+            let questionKey;
+            do {
+                switch(currentOperation) {
+                    case 'addition':
+                        num1 = Math.floor(Math.random() * 20) + 1; // 1-20
+                        num2 = Math.floor(Math.random() * 20) + 1; // 1-20
+                        correctAnswer = num1 + num2;
+                        break;
+                    case 'subtraction':
+                        // Ensure the result is positive for young children
+                        num1 = Math.floor(Math.random() * 20) + 10; // 10-29
+                        num2 = Math.floor(Math.random() * num1); // 0 to num1-1
+                        correctAnswer = num1 - num2;
+                        break;
+                    case 'multiplication':
+                        num1 = Math.floor(Math.random() * 10) + 1; // 1-10
+                        num2 = Math.floor(Math.random() * 10) + 1; // 1-10
+                        correctAnswer = num1 * num2;
+                        break;
+                    case 'division':
+                        // Ensure clean division without remainders
+                        num2 = Math.floor(Math.random() * 10) + 1; // 1-10
+                        correctAnswer = Math.floor(Math.random() * 10) + 1; // 1-10
+                        num1 = num2 * correctAnswer;
+                        break;
+                }
+                questionKey = `${num1},${num2},${currentOperation}`;
+            } while (previousQuestions.has(questionKey) && previousQuestions.size < 100);
 
             previousQuestions.add(questionKey);
 
-            // Update DOM
-            document.getElementById('num1').textContent = num1;
-            document.getElementById('num2').textContent = num2;
-            document.getElementById('operation-symbol').textContent = symbols[currentOperation];
-            document.getElementById('character').style.backgroundImage = `url('${characterStates.default}')`;
+            // Update DOM - use stored references
+            elements.num1.textContent = num1;
+            elements.num2.textContent = num2;
+            elements.opSymbol.textContent = symbols[currentOperation];
+            elements.character.style.backgroundImage = `url('${characterStates.default}')`;
             
             // Clear the input and focus on it
-            const answerInput = document.getElementById('answer');
-            answerInput.value = '';
-            answerInput.focus();
+            elements.answer.value = '';
+            elements.answer.focus();
             
             // Hide feedback
-            document.getElementById('feedback').classList.remove('visible', 'correct', 'incorrect');
-        }
-
-            // Update DOM
-            document.getElementById('num1').textContent = num1;
-            document.getElementById('num2').textContent = num2;
-            document.getElementById('operation-symbol').textContent = symbols[currentOperation];
-            document.getElementById('character').style.backgroundImage = `url('${characterStates.default}')`;
-            
-            // Clear the input and focus on it
-            const answerInput = document.getElementById('answer');
-            answerInput.value = '';
-            answerInput.focus();
-            
-            // Hide feedback
-            document.getElementById('feedback').classList.remove('visible', 'correct', 'incorrect');
+            elements.feedback.classList.remove('visible', 'correct', 'incorrect');
         }
 
         // Check the user's answer
         function checkAnswer() {
-            const answerInput = document.getElementById('answer');
-            const userAnswer = parseInt(answerInput.value.trim());
+            const userAnswer = parseInt(elements.answer.value.trim());
 
             // Validate that an answer was provided
             if (isNaN(userAnswer)) {
-                document.getElementById('feedback').textContent = "Please enter a number!";
-                document.getElementById('feedback').classList.add('visible', 'incorrect');
+                elements.feedback.textContent = "Please enter a number!";
+                elements.feedback.classList.add('visible', 'incorrect');
+                elements.incorrectSound.currentTime = 0;
+                elements.incorrectSound.play();
                 return;
             }
 
@@ -688,11 +640,15 @@
                     bestStreak = currentStreak;
                 }
                 
+                // Play sound
+                elements.correctSound.currentTime = 0;
+                elements.correctSound.play();
+                
                 // Show correct feedback
-                document.getElementById('feedback').textContent = "Correct! Great job!";
-                document.getElementById('feedback').classList.add('visible', 'correct');
-                document.getElementById('character').style.backgroundImage = `url('${characterStates.correct}')`;
-                document.getElementById('character').classList.add('celebrate');
+                elements.feedback.textContent = "Correct! Great job!";
+                elements.feedback.classList.add('visible', 'correct');
+                elements.character.style.backgroundImage = `url('${characterStates.correct}')`;
+                elements.character.classList.add('celebrate');
                 
                 // Show confetti
                 createConfetti();
@@ -701,76 +657,148 @@
                 incorrectAnswers++;
                 currentStreak = 0;
                 
+                // Play sound
+                elements.incorrectSound.currentTime = 0;
+                elements.incorrectSound.play();
+                
                 // Show incorrect feedback
-                document.getElementById('feedback').innerHTML = 
+                elements.feedback.innerHTML = 
                     `Not quite! The correct answer is <strong>${correctAnswer}</strong>`;
-                document.getElementById('feedback').classList.add('visible', 'incorrect');
-                document.getElementById('character').style.backgroundImage = `url('${characterStates.incorrect}')`;
+                elements.feedback.classList.add('visible', 'incorrect');
+                elements.character.style.backgroundImage = `url('${characterStates.incorrect}')`;
             }
             
             // Remove animation class after animation ends
             setTimeout(() => {
-                document.getElementById('character').classList.remove('celebrate');
+                elements.character.classList.remove('celebrate');
             }, 1000);
             
             // Update stats display
             updateStats();
             
             // Generate a new question after a delay
-            setTimeout(generateQuestion, 2000);
+            setTimeout(generateQuestion, 3000);
         }
 
         // Update statistics
         function updateStats() {
-            document.getElementById('questions-asked').textContent = questionsAsked;
-            document.getElementById('correct-answers').textContent = correctAnswers;
-            document.getElementById('streak').textContent = currentStreak;
+            elements.questionsAsked.textContent = questionsAsked;
+            elements.correctAnswers.textContent = correctAnswers;
+            elements.streak.textContent = currentStreak;
             
             // Calculate accuracy
             const accuracy = questionsAsked > 0 
                 ? Math.round((correctAnswers / questionsAsked) * 100) 
                 : 0;
-            document.getElementById('accuracy').textContent = `${accuracy}%`;
+            elements.accuracy.textContent = `${accuracy}%`;
             
             // Update progress bar (assuming 10 correct answers is a goal)
             const progressPercentage = Math.min(correctAnswers / 10 * 100, 100);
-            document.getElementById('progress-bar').style.width = `${progressPercentage}%`;
+            elements.progressBar.style.width = `${progressPercentage}%`;
         }
 
-        // Create confetti animation
+        // Create confetti animation (optimized)
         function createConfetti() {
-            const confettiContainer = document.getElementById('confetti-container');
-            confettiContainer.innerHTML = '';
-            confettiContainer.style.display = 'block';
+            const container = elements.confettiContainer;
+            container.innerHTML = '';
+            container.style.display = 'block';
             
             const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
+            const fragment = document.createDocumentFragment(); // Using fragment for better performance
             
-            // Create 100 confetti pieces
-            for (let i = 0; i < 100; i++) {
+            // Create 50 confetti pieces (reduced from 100 for performance)
+            for (let i = 0; i < 50; i++) {
                 const confetti = document.createElement('div');
                 confetti.classList.add('confetti');
                 confetti.style.left = `${Math.random() * 100}%`;
                 confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
                 confetti.style.animation = `fall ${Math.random() * 3 + 2}s linear forwards`;
                 confetti.style.opacity = Math.random();
-                confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
                 
                 // Different shapes of confetti
                 if (Math.random() > 0.5) {
                     confetti.style.borderRadius = '50%';
                 } else {
-                    confetti.style.width = `${Math.random() * 10 + 5}px`;
-                    confetti.style.height = `${Math.random() * 10 + 5}px`;
+                    const size = Math.random() * 10 + 5;
+                    confetti.style.width = `${size}px`;
+                    confetti.style.height = `${size}px`;
                 }
                 
-                confettiContainer.appendChild(confetti);
+                fragment.appendChild(confetti);
             }
+            
+            container.appendChild(fragment); // Append all confetti at once
             
             // Remove confetti after animation
             setTimeout(() => {
-                confettiContainer.style.display = 'none';
+                container.style.display = 'none';
             }, 3000);
         }
     </script>
+    <div class="app-container">
+        <div class="header">
+            <div class="profile-section">
+                <img src="samarth.png" alt="Samarth Chaurasia" class="profile-photo">
+                <div class="creator-info">
+                    <div class="creator-name">Samarth Chaurasia</div>
+                    <div class="creator-title">Student & Aspiring Coder</div>
+                </div>
+            </div>
+            <h1>Math Champions</h1>
+            <p class="subtitle">Master arithmetic with fun challenges!</p>
+            <button class="about-btn" onclick="showAbout()">About</button>
+        </div>
+    
+        <div class="operation-selector">
+            <button class="operation-btn active" data-op="addition">Addition</button>
+            <button class="operation-btn" data-op="subtraction">Subtraction</button>
+            <button class="operation-btn" data-op="multiplication">Multiplication</button>
+            <button class="operation-btn" data-op="division">Division</button>
+        </div>
+    
+        <div class="question-container">
+            <div class="character" id="character"></div>
+            <div class="question">
+                <div class="equation">
+                    <span id="num1">5</span>
+                    <span id="operation-symbol">+</span>
+                    <span id="num2">3</span>
+                    <span>=</span>
+                    <span>?</span>
+                </div>
+            </div>
+    
+            <div class="answer-section">
+                <input type="text" class="answer-input" id="answer" placeholder="Your answer">
+                <br>
+                <button class="check-btn" onclick="checkAnswer()">Check Answer</button>
+            </div>
+    
+            <div class="feedback" id="feedback"></div>
+    
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+        </div>
+    
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-label">Questions</div>
+                <div class="stat-value" id="questions-asked">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Correct</div>
+                <div class="stat-value" id="correct-answers">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Current Streak</div>
+                <div class="stat-value" id="streak">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Accuracy</div>
+                <div class="stat-value" id="accuracy">0%</div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
